@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa de pruebas – Ortiz Lemus</title>
+<style>
+:root{
+  --bg:#f6f5f1; --card:#ffffff; --ink:#1d1f23; --muted:#5f6670; --line:#dcd9d1;
+  --accent:#1f5fae; --accent-soft:#e3ecf8; --bad:#b3261e; --bad-soft:#f8e3e1;
+  --ok:#2e7d4f; --ok-soft:#e2f1e7; --warn:#9a6a00; --warn-soft:#f7edd5; --bar:#9aa3ad;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#15171a; --card:#1e2126; --ink:#eceae4; --muted:#a3a9b1; --line:#33373e;
+  --accent:#7fb0ef; --accent-soft:#1d2d44; --bad:#f08a80; --bad-soft:#3b1f1d;
+  --ok:#7fcf9c; --ok-soft:#1b3326; --warn:#e3bb5c; --warn-soft:#382d14; --bar:#6c747e; }}
+:root[data-theme="dark"]{
+  --bg:#15171a; --card:#1e2126; --ink:#eceae4; --muted:#a3a9b1; --line:#33373e;
+  --accent:#7fb0ef; --accent-soft:#1d2d44; --bad:#f08a80; --bad-soft:#3b1f1d;
+  --ok:#7fcf9c; --ok-soft:#1b3326; --warn:#e3bb5c; --warn-soft:#382d14; --bar:#6c747e; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 16px 60px}
+h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em}
+h2{font-size:19px;margin:40px 0 6px}
+p.lead{color:var(--muted);margin:0 0 6px;max-width:760px}
+.sub{color:var(--muted);font-size:13px}
+.verdict{display:flex;flex-wrap:wrap;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--bad);border-radius:10px;padding:16px 18px;margin:18px 0}
+.verdict b{font-size:18px}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600}
+.pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.acc{background:var(--accent-soft);color:var(--accent)}
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:14px;align-items:stretch}
+.node{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;position:relative}
+.node h3{margin:0 0 4px;font-size:15px}
+.node .tag{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);font-weight:700}
+.node ul{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--muted)}
+.arrow{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;text-align:center;padding:0 4px}
+.flowrow{display:grid;grid-template-columns:1fr 70px 1fr 70px 1fr 70px 1fr;margin-top:14px}
+.node.final{border-color:var(--bad);background:var(--bad-soft)}
+.node.final .tag{color:var(--bad)}
+.rule{margin-top:12px;font-size:13px;color:var(--muted)}
+table.mx{border-collapse:separate;border-spacing:6px;width:100%;margin-top:8px}
+.mx th{font-size:12px;color:var(--muted);font-weight:600;text-align:left;padding:0 4px}
+.mx td.sj{font-weight:600;font-size:13px;width:28%}
+.cell{width:100%;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left;color:var(--ink);font:inherit}
+.cell:hover{border-color:var(--accent)}
+.cell.sel{outline:2px solid var(--accent);outline-offset:1px}
+.cell .g{font-size:20px;font-weight:700}
+.cell .t{font-size:11px;color:var(--muted)}
+.cell.last{background:var(--bad-soft);border-color:var(--bad)}
+.detail{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-top:14px}
+.chain{display:grid;grid-template-columns:1fr 34px 1fr 34px 1fr 34px 1fr;align-items:stretch;margin-top:12px}
+.chain .box{border:1px solid var(--line);border-radius:8px;padding:10px;font-size:13px}
+.chain .box h4{margin:0 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent)}
+.chain .eq{display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--muted)}
+.big{font-size:24px;font-weight:700}
+.file{font-family:Consolas,monospace;font-size:11px;color:var(--muted);word-break:break-word;margin-top:6px}
+.open{display:inline-block;margin-top:8px;font-size:12.5px;font-weight:600;color:var(--accent);text-decoration:none;border:1px solid var(--accent);border-radius:6px;padding:3px 9px}
+.open:hover{background:var(--accent-soft)}
+.idx{columns:2;font-size:13px;margin-top:8px;padding-left:0;list-style:none}.idx li{break-inside:avoid;padding:3px 0}.idx a{color:var(--accent)}
+@media (max-width:760px){.idx{columns:1}}
+.ev{list-style:none;margin:6px 0 0;padding:0;font-size:12.5px}
+.ev li{padding:3px 0;border-bottom:1px dashed var(--line)}
+.ev li:last-child{border:0}
+.ev .k{font-weight:600}
+.comp{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.comp span{font-size:11px;background:var(--accent-soft);color:var(--accent);border-radius:4px;padding:1px 6px}
+.tl{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:10px}
+.tl h3{margin:0 0 2px;font-size:14px}
+.legend{font-size:12px;color:var(--muted);margin-top:6px}
+svg text{font-family:inherit}
+.note{font-size:13px;color:var(--muted);margin-top:8px}
+@media (max-width:760px){
+  .flowrow{grid-template-columns:1fr}.arrow{padding:6px 0;font-size:12px}.arrow span::before{content:"↓ "}
+  .chain{grid-template-columns:1fr}.chain .eq{padding:4px 0}
+  table.mx{border-spacing:3px}.cell{padding:6px}.cell .g{font-size:16px}.mx td.sj{font-size:12px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Mapa de pruebas del informe técnico</h1>
+  <p class="lead">ORTIZ LEMUS ANGIE YARIELA · C.I. 1206050104 · Trabajo Social en Línea (malla 2019, rediseño 2020) · Facultad de Ciencias Humanísticas y Sociales</p>
+
+  <div class="verdict">
+    <span class="pill bad">PERDIÓ ESCUELA – confirmado</span>
+    <b>5 asignaturas de sexto nivel reprobadas 3 veces</b>
+    <span class="sub">15 de 15 notas del historial coinciden con Moodle · 0 exámenes finales rendidos · 1.608 eventos de actividad revisados</span>
+  </div>
+
+  <h2>1. Cómo se conectan las pruebas</h2>
+  <p class="lead">Cada conclusión se apoya en tres documentos independientes. Si los tres dicen lo mismo, la prueba es firme.</p>
+  <div class="flowrow">
+    <div class="node"><div class="tag">Prueba A</div><h3>Historial académico</h3>
+      <ul><li>Nota oficial por matrícula</li><li>Observación: NO ACREDITADO / PERDIÓ ESCUELA</li></ul></div>
+    <div class="arrow"><span>¿la nota es igual? →</span></div>
+    <div class="node"><div class="tag">Prueba B</div><h3>Calificador Moodle</h3>
+      <ul><li>Nota de cada actividad</li><li>Total del curso</li><li>Examen final en 0</li></ul></div>
+    <div class="arrow"><span>¿hay entrega detrás de cada nota? →</span></div>
+    <div class="node"><div class="tag">Prueba C</div><h3>Registro de actividad</h3>
+      <ul><li>Accesos y fechas</li><li>Tareas y tests enviados</li><li>Bloqueos de Safe Exam Browser</li></ul></div>
+    <div class="arrow"><span>¿es la 3.ª vez? →</span></div>
+    <div class="node final"><div class="tag">Resultado</div><h3>Pierde la carrera</h3>
+      <ul><li>Reprobó en 3.ª matrícula</li><li>Norma UTM sobre tercera matrícula</li></ul></div>
+  </div>
+  <p class="rule">Regla aplicada: quien reprueba una asignatura en tercera matrícula no puede continuar la misma carrera. Basta una asignatura; aquí son cinco.</p>
+
+  <h2>2. Las 15 matrículas, una por una</h2>
+  <p class="lead">Toque cualquier casilla para ver la cadena de pruebas de esa asignatura y ese periodo. En rojo, la tercera matrícula.</p>
+  <table class="mx" id="mx"></table>
+  <div class="detail" id="detail"></div>
+
+  <h2>3. Cuándo se conectó la estudiante</h2>
+  <p class="lead">Cada barra es un día con actividad en Moodle (suma de las cinco aulas). Las marcas señalan los momentos que explican las notas.</p>
+  <div id="tls"></div>
+  <p class="legend">Fuente: registros «Informe» de Moodle de cada asignatura · altura = número de eventos del día.</p>
+
+  <h2>4. Índice de pruebas (Google Drive)</h2>
+  <p class="lead">Los mismos códigos del informe técnico. Cada enlace abre el PDF original en Drive.</p>
+  <ul class="idx" id="idx"></ul>
+</div>
+
+<script>
+const DAYS={"2025P1|LEG": {"2025-05-07": 25, "2025-05-11": 38, "2025-05-12": 4, "2025-05-13": 4, "2025-05-17": 6, "2025-05-18": 3, "2025-05-19": 6, "2025-06-12": 22, "2025-06-14": 11, "2025-06-16": 6, "2025-06-17": 6, "2025-06-21": 10, "2025-07-05": 18, "2025-07-06": 1, "2025-07-07": 51, "2025-07-11": 6, "2025-07-15": 17, "2025-07-18": 7, "2025-07-19": 3, "2025-07-21": 5}, "2025P1|MOD": {"2025-05-07": 5, "2025-05-11": 1, "2025-05-12": 1, "2025-05-17": 17, "2025-05-18": 7, "2025-05-19": 2, "2025-05-20": 10, "2025-05-23": 4, "2025-05-31": 6, "2025-06-12": 27, "2025-06-14": 13, "2025-06-16": 14, "2025-06-17": 7, "2025-06-20": 9, "2025-06-21": 7, "2025-07-07": 25, "2025-07-11": 1, "2025-07-18": 1, "2025-07-21": 5}, "2025P1|PRO": {"2025-04-30": 1, "2025-05-07": 3, "2025-05-11": 1, "2025-05-17": 45, "2025-05-18": 3, "2025-05-19": 4, "2025-05-23": 2, "2025-05-31": 3, "2025-06-12": 17, "2025-06-14": 15, "2025-06-16": 4, "2025-06-20": 6, "2025-06-21": 7, "2025-07-07": 32, "2025-07-11": 6, "2025-07-18": 1, "2025-07-19": 12}, "2025P1|PDS": {"2025-04-30": 2, "2025-05-17": 64, "2025-05-23": 6, "2025-05-25": 3, "2025-05-31": 6, "2025-06-12": 16, "2025-06-14": 13, "2025-06-17": 2, "2025-06-21": 5, "2025-07-07": 26, "2025-07-11": 1}, "2025P1|SAL": {"2025-05-07": 3, "2025-05-12": 3, "2025-05-17": 9, "2025-05-18": 33, "2025-05-19": 42, "2025-05-20": 2, "2025-05-23": 2, "2025-05-25": 27, "2025-05-31": 38, "2025-06-05": 18, "2025-06-12": 6, "2025-06-14": 13, "2025-06-16": 1, "2025-06-17": 3, "2025-06-20": 3, "2025-06-21": 6, "2025-07-05": 16, "2025-07-07": 67, "2025-07-15": 12, "2025-07-18": 3, "2025-07-21": 9}, "2024P2|LEG": {"2024-10-20": 21, "2024-10-22": 2, "2024-10-28": 12, "2024-11-11": 3, "2024-11-27": 2, "2024-12-05": 6, "2025-01-11": 2}, "2024P2|MOD": {"2024-10-18": 1, "2024-10-19": 31, "2024-10-22": 2, "2024-10-31": 3, "2024-11-11": 2}, "2024P2|PRO": {"2024-10-18": 2, "2024-11-11": 3, "2024-11-27": 3, "2024-12-05": 5, "2025-01-11": 1, "2025-01-23": 6}, "2024P2|PDS": {"2024-11-11": 11, "2024-11-27": 2, "2024-12-05": 5}, "2024P2|SAL": {"2024-10-18": 2, "2024-11-07": 2, "2024-11-09": 2, "2024-11-11": 2, "2024-12-05": 5}, "2025P2|LEG": {"2025-09-23": 2, "2025-10-17": 11, "2025-10-18": 35, "2025-10-20": 3, "2025-11-08": 20, "2025-11-24": 4}, "2025P2|MOD": {"2025-10-17": 11, "2025-10-18": 43, "2025-11-02": 1, "2025-11-08": 25}, "2025P2|PRO": {"2025-10-17": 14, "2025-10-18": 55, "2025-10-20": 1, "2025-11-02": 3, "2025-11-08": 28}, "2025P2|PDS": {"2025-10-17": 12, "2025-10-18": 38, "2025-11-08": 45, "2025-11-24": 1}, "2025P2|SAL": {"2025-09-23": 5, "2025-10-17": 9, "2025-10-18": 44, "2025-11-02": 1, "2025-11-08": 21, "2025-11-24": 1, "2025-12-08": 4}};
+const META={"2025P1|LEG": {"n": 249, "first": "2025-05-07 17:44", "last": "2025-07-21 20:01", "file": "LEGISLACIÓN Y SEGURIDAD SOCIAL (TS-ON LINE)(R2020) - 2025P1 - angela.sanchez.pdf"}, "2025P1|MOD": {"n": 162, "first": "2025-05-07 17:41", "last": "2025-07-21 20:19", "file": "MODELOS DE INTERVENCIÓN INSTITUCIONAL (TS-ON LINE)(R2020) - maria.nagua.pdf"}, "2025P1|PRO": {"n": 162, "first": "2025-04-30 15:12", "last": "2025-07-19 12:44", "file": "PROCESOS DE TRABAJO SOCIAL CON POBLACIÓN DE ATENCIÓN PRIORITARIA (TS-ON LINE)(R2020) - 2025P1 - iris.sanchez.pdf"}, "2025P1|PDS": {"n": 144, "first": "2025-04-30 15:11", "last": "2025-07-11 23:37", "file": "PROYECTOS DE DESARROLLO SOCIAL (TS-ON LINE)(R2020) - 2025P1 - loyola.garcia.pdf"}, "2025P1|SAL": {"n": 316, "first": "2025-05-07 17:41", "last": "2025-07-21 20:05", "file": "SALUD MENTAL (TS-ON LINE)(R2020) - selena.iman.pdf"}, "2024P2|LEG": {"n": 48, "first": "2024-10-20 00:06", "last": "2025-01-11 14:01", "file": "LEGISLACIÓN Y SEGURIDAD SOCIAL (TS-ON LINE)(R2020) - 2024P2 - angela.sanchez - 2024P2.pdf"}, "2024P2|MOD": {"n": 39, "first": "2024-10-18 16:22", "last": "2024-11-11 10:36", "file": "MODELOS DE INTERVENCIÓN INSTITUCIONAL (TS-ON LINE)(R2020) - 2024P2 - maria.salvatierra - 2024P2.pdf"}, "2024P2|PRO": {"n": 20, "first": "2024-10-18 17:47", "last": "2025-01-23 05:29", "file": "PROCESOS DE TRABAJO SOCIAL CON POBLACIÓN DE ATENCIÓN PRIORITARIA (TS-ON LINE)(R2020) - 2024P2 - iris.sanchez - 2024P2.pdf"}, "2024P2|PDS": {"n": 18, "first": "2024-11-11 10:39", "last": "2024-12-05 03:06", "file": "PROYECTOS DE DESARROLLO SOCIAL (TS-ON LINE)(R2020) - 2024P2 - loyola.garcia - 2024P2.pdf"}, "2024P2|SAL": {"n": 13, "first": "2024-10-18 17:47", "last": "2024-12-05 03:08", "file": "SALUD MENTAL (TS-ON LINE)(R2020) - 2024P2 - rosa.mera - 2024P2.pdf"}, "2025P2|LEG": {"n": 75, "first": "2025-09-23 02:20", "last": "2025-11-24 18:52", "file": "LEGISLACIÓN Y SEGURIDAD SOCIAL (TS-ON LINE)(R2020) - 2025P2 - angela.sanchez.pdf"}, "2025P2|MOD": {"n": 80, "first": "2025-10-17 20:24", "last": "2025-11-08 23:56", "file": "MODELOS DE INTERVENCIÓN INSTITUCIONAL (TS-ON LINE)(R2020) - 2025P2 - maria.nagua.pdf"}, "2025P2|PRO": {"n": 101, "first": "2025-10-17 20:27", "last": "2025-11-08 23:56", "file": "PROCESOS DE TRABAJO SOCIAL CON POBLACIÓN DE ATENCIÓN PRIORITARIA (TS-ON LINE)(R2020) - 2025P2 - iris.sanchez.pdf"}, "2025P2|PDS": {"n": 96, "first": "2025-10-17 20:32", "last": "2025-11-24 18:51", "file": "PROYECTOS DE DESARROLLO SOCIAL (TS-ON LINE)(R2020) - 2025P2 - loyola.garcia.pdf"}, "2025P2|SAL": {"n": 85, "first": "2025-09-23 02:17", "last": "2025-12-08 17:35", "file": "SALUD MENTAL (TS-ON LINE)(R2020) - 2025P2 - selena.iman.pdf"}};
+
+const LINKS={"codes": {"P-01": "https://drive.google.com/file/d/1B4PgC3Sm6gvv8NM82prPVr49KRbUy9I-/view", "P-02": "https://drive.google.com/file/d/1olnuiTbhb830QPsFZg0X-ZvE0QobnrZ_/view", "P-03": "https://drive.google.com/file/d/1ERQFxyYkiUfLFJ__8LtnlJcPBY-8IWRJ/view", "P-04": "https://drive.google.com/file/d/1XICy5_1Uk3m2UpKfGtCGzW00crQa_mUx/view", "P-05": "https://drive.google.com/file/d/1k3Qn49gkbgYF0jPjfhAYWcv3UIE27XuG/view", "P-06": "https://drive.google.com/file/d/1wWWun48E0R_VNFyZJ6pVmadwVZUiQBSs/view", "P-07": "https://drive.google.com/file/d/1ZrcsCPWIHjSJTd3iewsrcnTpqwONLjvg/view", "P-08": "https://drive.google.com/file/d/1QshR3PfBhbj7WU7wa7veEVZZp8bN13nb/view", "P-09": "https://drive.google.com/file/d/1y8YXBT45osCZTy-QwScHAl55jJvmLGwq/view", "P-10": "https://drive.google.com/file/d/1M9uEf1Bnk7WW8ICI0QzUNtMrid9qDwQO/view", "P-11": "https://drive.google.com/file/d/16ipnXN7vY__IfuCydzyyGFarILu1QL2_/view", "P-12": "https://drive.google.com/file/d/17GO_pTgPalmhCHBNUYGPsmMaEuzb5LSK/view", "P-13": "https://drive.google.com/file/d/1rzVF_EPy4QVwGMG8mxtzwMDS2VoeTU-d/view", "P-14": "https://drive.google.com/file/d/1tcYvcgS0klFY4YaYIIvAR2Mzhv7-adGR/view", "P-15": "https://drive.google.com/file/d/1GHUBvbvuzYUxjPO2nEo6QGEClYPOTs8U/view", "P-16": "https://drive.google.com/file/d/1xj7SdrKJYWeueCUgY1HYhhblqd4JC9J0/view", "P-17": "https://drive.google.com/file/d/1l3FPz9mnShPF8x_UWS4hR1oB50QGRShr/view", "P-18": "https://drive.google.com/file/d/1LZUkmmzxJZkudbkyQ1FKfTWzWy9Fkbx0/view", "P-19": "https://drive.google.com/file/d/1MDjz-xTW00RY_Fmk9ZUf7YCLBD9UnD6r/view", "P-20": "https://drive.google.com/file/d/12CDZpEyzo9UIEpiK_deL9VoVnme5QX7N/view", "P-21": "https://drive.google.com/file/d/1fnDUVHSyIzrmg8PlHsqjiRZgBO2mOgRz/view", "P-22": "https://drive.google.com/file/d/1B3BjvB__sWTB5E2VqRssls1XDNapFKlE/view", "P-23": "https://drive.google.com/file/d/1I3HjHQP67vyLeIkMl23joVT3p0N5FlSK/view", "P-24": "https://drive.google.com/file/d/1zUG8vY5aBJ6goceuPzlJDqH6jkVdeaAB/view", "P-25": "https://drive.google.com/file/d/1_A754e_iWvzQMxN5-8Fzy5S-v_UXCW8V/view", "P-26": "https://drive.google.com/file/d/1XG7VYF-0zYKsWkliPm9ZXaRQ3X9v8Gpr/view", "P-27": "https://drive.google.com/file/d/1FGA0v3NjYnx0fY5UcNtwGk4DMaO9eUEx/view", "P-28": "https://drive.google.com/file/d/1E3MKbYs8P4zEky_zTwpXJgVW-lM5ZRmY/view", "P-29": "https://drive.google.com/file/d/1vbkSsZrETXQoBsXgt5P6HkxAim7e2E5D/view", "P-30": "https://drive.google.com/file/d/1ZJ1eJtxXUVSMf0OdYvcisg7YqFsgGSAC/view", "P-31": "https://drive.google.com/file/d/1zz4eDQM1IvG_pZCfuAbEziN23dPzxmR0/view"}, "html": {"2024P2|LEG": {"nota": ["P-02", "https://drive.google.com/file/d/1olnuiTbhb830QPsFZg0X-ZvE0QobnrZ_/view"], "log": ["P-03", "https://drive.google.com/file/d/1ERQFxyYkiUfLFJ__8LtnlJcPBY-8IWRJ/view"]}, "2024P2|MOD": {"nota": ["P-04", "https://drive.google.com/file/d/1XICy5_1Uk3m2UpKfGtCGzW00crQa_mUx/view"], "log": ["P-05", "https://drive.google.com/file/d/1k3Qn49gkbgYF0jPjfhAYWcv3UIE27XuG/view"]}, "2024P2|PRO": {"nota": ["P-06", "https://drive.google.com/file/d/1wWWun48E0R_VNFyZJ6pVmadwVZUiQBSs/view"], "log": ["P-07", "https://drive.google.com/file/d/1ZrcsCPWIHjSJTd3iewsrcnTpqwONLjvg/view"]}, "2024P2|PDS": {"nota": ["P-08", "https://drive.google.com/file/d/1QshR3PfBhbj7WU7wa7veEVZZp8bN13nb/view"], "log": ["P-09", "https://drive.google.com/file/d/1y8YXBT45osCZTy-QwScHAl55jJvmLGwq/view"]}, "2024P2|SAL": {"nota": ["P-10", "https://drive.google.com/file/d/1M9uEf1Bnk7WW8ICI0QzUNtMrid9qDwQO/view"], "log": ["P-11", "https://drive.google.com/file/d/16ipnXN7vY__IfuCydzyyGFarILu1QL2_/view"]}, "2025P1|LEG": {"nota": ["P-12", "https://drive.google.com/file/d/17GO_pTgPalmhCHBNUYGPsmMaEuzb5LSK/view"], "log": ["P-13", "https://drive.google.com/file/d/1rzVF_EPy4QVwGMG8mxtzwMDS2VoeTU-d/view"]}, "2025P1|MOD": {"nota": ["P-14", "https://drive.google.com/file/d/1tcYvcgS0klFY4YaYIIvAR2Mzhv7-adGR/view"], "log": ["P-15", "https://drive.google.com/file/d/1GHUBvbvuzYUxjPO2nEo6QGEClYPOTs8U/view"]}, "2025P1|PRO": {"nota": ["P-16", "https://drive.google.com/file/d/1xj7SdrKJYWeueCUgY1HYhhblqd4JC9J0/view"], "log": ["P-17", "https://drive.google.com/file/d/1l3FPz9mnShPF8x_UWS4hR1oB50QGRShr/view"]}, "2025P1|PDS": {"nota": ["P-18", "https://drive.google.com/file/d/1LZUkmmzxJZkudbkyQ1FKfTWzWy9Fkbx0/view"], "log": ["P-19", "https://drive.google.com/file/d/1MDjz-xTW00RY_Fmk9ZUf7YCLBD9UnD6r/view"]}, "2025P1|SAL": {"nota": ["P-20", "https://drive.google.com/file/d/12CDZpEyzo9UIEpiK_deL9VoVnme5QX7N/view"], "log": ["P-21", "https://drive.google.com/file/d/1fnDUVHSyIzrmg8PlHsqjiRZgBO2mOgRz/view"]}, "2025P2|LEG": {"nota": ["P-22", "https://drive.google.com/file/d/1B3BjvB__sWTB5E2VqRssls1XDNapFKlE/view"], "log": ["P-23", "https://drive.google.com/file/d/1I3HjHQP67vyLeIkMl23joVT3p0N5FlSK/view"]}, "2025P2|MOD": {"nota": ["P-24", "https://drive.google.com/file/d/1zUG8vY5aBJ6goceuPzlJDqH6jkVdeaAB/view"], "log": ["P-25", "https://drive.google.com/file/d/1_A754e_iWvzQMxN5-8Fzy5S-v_UXCW8V/view"]}, "2025P2|PRO": {"nota": ["P-26", "https://drive.google.com/file/d/1XG7VYF-0zYKsWkliPm9ZXaRQ3X9v8Gpr/view"], "log": ["P-27", "https://drive.google.com/file/d/1FGA0v3NjYnx0fY5UcNtwGk4DMaO9eUEx/view"]}, "2025P2|PDS": {"nota": ["P-28", "https://drive.google.com/file/d/1E3MKbYs8P4zEky_zTwpXJgVW-lM5ZRmY/view"], "log": ["P-29", "https://drive.google.com/file/d/1vbkSsZrETXQoBsXgt5P6HkxAim7e2E5D/view"]}, "2025P2|SAL": {"nota": ["P-30", "https://drive.google.com/file/d/1ZJ1eJtxXUVSMf0OdYvcisg7YqFsgGSAC/view"], "log": ["P-31", "https://drive.google.com/file/d/1zz4eDQM1IvG_pZCfuAbEziN23dPzxmR0/view"]}}};
+const SUBJ=[
+ {k:'LEG',n:'Legislación y Seguridad Social'},
+ {k:'MOD',n:'Modelos de Intervención Institucional'},
+ {k:'PRO',n:'Procesos de TS con Población de Atención Prioritaria'},
+ {k:'PDS',n:'Proyectos de Desarrollo Social'},
+ {k:'SAL',n:'Salud Mental'}];
+const PER=[
+ {k:'2024P2',n:'1.ª matrícula',r:'Oct 2024 – Ene 2025',s:'2024-10-01',e:'2025-01-31'},
+ {k:'2025P1',n:'2.ª matrícula',r:'Abr – Ago 2025',s:'2025-04-01',e:'2025-08-31'},
+ {k:'2025P2',n:'3.ª matrícula',r:'Sep 2025 – Ene 2026',s:'2025-09-01',e:'2026-01-31'}];
+// nota historial, total moodle, componentes, evidencias del registro
+const D={
+'2024P2|LEG':{h:9,m:'9',c:['Contacto 9 (Act.1 = 8,50)','Autónomo –','Práctico –','Examen –'],ev:[['20/10/2024','Entrega','Act.1 Mapa mental'],['05/12/2024 03:08','Bloqueo SEB','Examen final']],obs:'Única nota = única tarea entregada.'},
+'2024P2|MOD':{h:10,m:'10',c:['Contacto 10','Autónomo 0','Práctico –','Examen –'],ev:[['19/10/2024','Entrega','Act.1 Cuadro sinóptico']],obs:'Último acceso 11/11/2024; abandona a mitad del periodo.'},
+'2024P2|PRO':{h:0,m:'– (0)',c:['Sin calificaciones registradas'],ev:[['05/12/2024 03:07','Bloqueo SEB','Examen final'],['23/01/2025 05:29','Bloqueo SEB','Examen final']],obs:'Ninguna entrega; dos intentos de examen bloqueados.'},
+'2024P2|PDS':{h:0,m:'0',c:['Contacto 0','Autónomo 0','Práctico 0','Examen –'],ev:[['05/12/2024 03:06','Bloqueo SEB','Examen final']],obs:'Solo 3 días con actividad; ninguna entrega.'},
+'2024P2|SAL':{h:0,m:'– (0)',c:['Sin calificaciones registradas'],ev:[['07/11/2024','Solo vista','Act.1 Entrevista (sin envío)']],obs:'Abrió tareas y tests, pero no envió nada.'},
+'2025P1|LEG':{h:30,m:'30',c:['Contacto 16','Autónomo 10','Práctico 4','Examen 0'],ev:[['11/05/2025','Entrega','Act.1 Infografía'],['14/06/2025','Test','Act.5 Test Unidad 2'],['05/07/2025','Entrega','Act.6 Estudio de caso'],['07/07/2025','Test','Act.8 Test U3 casos especiales'],['07/07/2025','Entrega','Act.7 Ensayo']],obs:'Vio el «Examen final – casos especiales» el 15 y 18/07 sin iniciarlo.'},
+'2025P1|MOD':{h:14,m:'14',c:['Contacto 10','Autónomo 0','Práctico 4','Examen 0'],ev:[['17/05/2025','Test','Act.2 Test Unidad 1'],['20/05/2025','Entrega','Act.1 Cuadro sinóptico'],['14/06/2025','Test','Act.5 Test Unidad 2'],['07/07/2025','Bloqueo SEB','Act.8 Test Unidad 3 (×4)']],obs:'Sin intento de examen final.'},
+'2025P1|PRO':{h:12,m:'12',c:['Contacto 10','Autónomo 0','Práctico 2','Examen 0'],ev:[['17/05/2025','Entrega','Act.1 Resolución de problema'],['14/06/2025','Test','Act.5 Test Unidad 2'],['07/07/2025','Bloqueo SEB','Act.8 Test Unidad 3 (×3)'],['07/07/2025','Comentario','Act.6 Lluvia de ideas (sin archivo)']],obs:'Sin intento de examen final.'},
+'2025P1|PDS':{h:8,m:'8',c:['Contacto 5','Autónomo 0','Práctico 3','Examen 0'],ev:[['17/05/2025','Test','Act.2 Test 1'],['17/05/2025','Entrega','Act.1 Wiki/Glosario'],['14/06/2025','Test','Act.5 Test Unidad 2'],['07/07/2025','Bloqueo SEB','Act.8 Test Unidad 3 (×2)']],obs:'Último acceso 11/07/2025.'},
+'2025P1|SAL':{h:35,m:'35',c:['Contacto 13','Autónomo 10','Práctico 12','Examen 0'],ev:[['19/05/2025','Entrega','Act.1 Infografía (reenviada)'],['31/05/2025','Entrega','Act.3 Cuadro sinóptico (reenviada)'],['05/06/2025','Entrega','Act.4 Infografía'],['14/06/2025','Test','Act.5 Test Unidad 2'],['05/07/2025','Entrega','Act.6 Genograma'],['07/07/2025','Bloqueo SEB','Act.8 Test Unidad 3 (×6)']],obs:'La asignatura con más actividad; aun así, sin examen final.'},
+'2025P2|LEG':{h:18,m:'18',c:['Contacto 8','Autónomo 8','Práctico 2','Examen 0'],ev:[['18/10/2025','Entrega','Act.1 Mapa mental'],['18/10/2025','Test','Act.2 Test Unidad 1'],['08/11/2025','Entrega','Act.4 Infografía']],obs:'Último acceso 24/11/2025.'},
+'2025P2|MOD':{h:26,m:'26',c:['Contacto 8','Autónomo 8','Práctico 10','Examen 0'],ev:[['18/10/2025','Entrega','Act.1 Cuadro sinóptico'],['18/10/2025','Test','Act.2 Test Unidad 1'],['08/11/2025','Entrega','Act.3 Cuadro comparativo'],['08/11/2025','Entrega','Act.4 Simulación de intervención']],obs:'Último acceso 08/11/2025.'},
+'2025P2|PRO':{h:24,m:'24',c:['Contacto 10','Autónomo –','Práctico 14','Examen 0'],ev:[['18/10/2025','Entrega','Act.1 Presentación Power Point'],['18/10/2025','Test','Act.2 Test Unidad 1'],['08/11/2025','Entrega','Act.3 Prácticas']],obs:'Último acceso 08/11/2025.'},
+'2025P2|PDS':{h:27,m:'27 (26,5)',c:['Contacto 6','Autónomo 7','Práctico 13,5','Examen 0'],ev:[['18/10/2025','Entrega','Act.1 Estudio de caso'],['18/10/2025','Test','Act.2 Test Unidad 1'],['08/11/2025','Entrega','Act.3 Caso práctico (reenviado)'],['08/11/2025','Entrega','Act.4 Entrevista']],obs:'Último acceso 24/11/2025.'},
+'2025P2|SAL':{h:36,m:'36',c:['Contacto 15','Autónomo 10','Práctico 11','Examen 0'],ev:[['18/10/2025','Entrega','Act.1 Infografía'],['18/10/2025','Test','Act.2 Test Unidad 1'],['08/11/2025','Entrega','Act.3 Cuadro sinóptico'],['08/12/2025','Solo vista','Retroalimentación Act.4']],obs:'Act.4 (10 pts) y Act.9 (7 pts) tienen nota sin evento de entrega en el registro: confirmar con la docente. No cambia el resultado.',warn:true}
+};
+const pillFor=t=>({'Entrega':'ok','Test':'acc','Bloqueo SEB':'bad','Solo vista':'warn','Comentario':'warn'}[t]||'acc');
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const mx=document.getElementById('mx');
+let html='<tr><th>Asignatura</th>'+PER.map(p=>`<th>${p.n}<br><span class="sub">${p.r}</span></th>`).join('')+'</tr>';
+SUBJ.forEach(s=>{
+  html+=`<tr><td class="sj">${s.n}</td>`+PER.map((p,i)=>{const d=D[p.k+'|'+s.k];
+    return `<td><button class="cell${i===2?' last':''}" data-k="${p.k}|${s.k}"><div class="g">${d.h}</div><div class="t">${i===2?'PERDIÓ ESCUELA':'NO ACREDITADO'} · ✓ Moodle</div></button></td>`}).join('')+'</tr>';
+});
+mx.innerHTML=html;
+function show(k){
+  document.querySelectorAll('.cell').forEach(b=>b.classList.toggle('sel',b.dataset.k===k));
+  const [p,s]=k.split('|'); const d=D[k], m=META[k], P=PER.find(x=>x.k===p), S=SUBJ.find(x=>x.k===s);
+  const third=p==='2025P2'; const lk=LINKS.html[k];
+  document.getElementById('detail').innerHTML=`
+   <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><b style="font-size:16px">${S.n}</b>
+   <span class="pill acc">${P.n} · ${P.r}</span>${third?'<span class="pill bad">3.ª vez → pierde la carrera</span>':'<span class="pill warn">Reprobada, puede repetir</span>'}</div>
+   <div class="chain">
+     <div class="box"><h4>A · Historial</h4><div class="big">${d.h}</div>/100 · ${third?'PERDIÓ ESCUELA':'NO ACREDITADO'}
+       <div class="file">P-01 · HISTORIAL ACADEMICO.pdf</div><a class="open" href="${LINKS.codes['P-01']}" target="_blank" rel="noopener">Abrir P-01 ↗</a></div>
+     <div class="eq">=</div>
+     <div class="box"><h4>B · Calificador Moodle</h4><div class="big">${d.m}</div>Total del curso
+       <div class="comp">${d.c.map(x=>`<span>${esc(x)}</span>`).join('')}</div>
+       <div class="file">${lk.nota[0]} · calificador ${esc(p)}</div><a class="open" href="${lk.nota[1]}" target="_blank" rel="noopener">Abrir ${lk.nota[0]} ↗</a></div>
+     <div class="eq">⇐</div>
+     <div class="box"><h4>C · Registro de actividad</h4>${m.n} eventos · ${Object.keys(DAYS[k]).length} días<br>
+       <span class="sub">${m.first.slice(0,10).split('-').reverse().join('/')} → ${m.last.slice(0,10).split('-').reverse().join('/')}</span>
+       <ul class="ev">${d.ev.map(e=>`<li><span class="pill ${pillFor(e[1])}">${e[1]}</span> <span class="k">${e[0]}</span> · ${esc(e[2])}</li>`).join('')}</ul>
+       <div class="file">${lk.log[0]} · ${esc(m.file)}</div><a class="open" href="${lk.log[1]}" target="_blank" rel="noopener">Abrir ${lk.log[0]} ↗</a></div>
+     <div class="eq">→</div>
+     <div class="box" style="${third?'border-color:var(--bad);background:var(--bad-soft)':''}"><h4>Lectura</h4>${esc(d.obs)}
+       ${d.warn?'<div style="margin-top:6px"><span class="pill warn">Observación</span></div>':''}
+       <div style="margin-top:8px">${third?'Tercera reprobación: activa la pérdida de carrera.':'Reprobación registrada; habilita una nueva matrícula.'}</div></div>
+   </div>`;
+}
+mx.addEventListener('click',e=>{const b=e.target.closest('.cell'); if(b) show(b.dataset.k);});
+show('2025P2|LEG');
+(function(){const per={'2024P2':'Oct 2024–Ene 2025','2025P1':'Abr–Ago 2025','2025P2':'Sep 2025–Ene 2026'};
+ let h=`<li><a href="${LINKS.codes['P-01']}" target="_blank" rel="noopener">P-01</a> · Historial académico</li>`;
+ PER.forEach(p=>SUBJ.forEach(s=>{const l=LINKS.html[p.k+'|'+s.k];
+  h+=`<li><a href="${l.nota[1]}" target="_blank" rel="noopener">${l.nota[0]}</a> · Nota · ${s.n} · ${per[p.k]}</li><li><a href="${l.log[1]}" target="_blank" rel="noopener">${l.log[0]}</a> · Registro · ${s.n} · ${per[p.k]}</li>`;}));
+ document.getElementById('idx').innerHTML=h;})();
+
+// timelines
+const MARKS={
+ '2024P2':[['2024-12-05','05/12 · exámenes bloqueados por SEB'],['2025-01-23','23/01 · nuevo bloqueo']],
+ '2025P1':[['2025-06-14','14/06 · tests U2 de las 5'],['2025-07-07','07/07 · 15 bloqueos SEB']],
+ '2025P2':[['2025-10-18','18/10 · Act.1 + test U1 de las 5'],['2025-11-08','08/11 · últimas entregas']]};
+const tls=document.getElementById('tls');
+PER.forEach(p=>{
+  const agg={}; SUBJ.forEach(s=>{const dd=DAYS[p.k+'|'+s.k]||{}; for(const k in dd) agg[k]=(agg[k]||0)+dd[k];});
+  const t0=new Date(p.s+'T00:00:00'), t1=new Date(p.e+'T00:00:00'); const span=(t1-t0)/864e5;
+  const W=1000,H=150,L=10,R=10,base=110; const x=d=>L+((new Date(d+'T00:00:00')-t0)/864e5)/span*(W-L-R);
+  const mx=Math.max(...Object.values(agg)); const y=v=>base-v/mx*80;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Actividad diaria ${p.n}">`;
+  svg+=`<line x1="${L}" x2="${W-R}" y1="${base}" y2="${base}" stroke="var(--line)"/>`;
+  // month ticks
+  let m=new Date(t0); while(m<=t1){const ds=m.toISOString().slice(0,10); const xx=x(ds);
+    svg+=`<line x1="${xx}" x2="${xx}" y1="${base}" y2="${base+5}" stroke="var(--muted)"/><text x="${xx+3}" y="${base+18}" font-size="12" fill="var(--muted)">${m.toLocaleDateString('es-EC',{month:'short',year:'2-digit'})}</text>`;
+    m=new Date(m.getFullYear(),m.getMonth()+1,1);}
+  const mk=MARKS[p.k].map(a=>a[0]);
+  Object.entries(agg).forEach(([d,v])=>{const xx=x(d); const hi=mk.includes(d);
+    svg+=`<rect x="${xx-2.5}" y="${y(v)}" width="5" height="${base-y(v)}" rx="1" fill="${hi?'var(--accent)':'var(--bar)'}"><title>${d.split('-').reverse().join('/')}: ${v} eventos</title></rect>`;});
+  MARKS[p.k].forEach((a,i)=>{const xx=x(a[0]); const anchor=xx>W*0.7?'end':'start';
+    svg+=`<text x="${xx+(anchor==='end'?-6:6)}" y="${18+i*16}" font-size="12.5" fill="var(--accent)" text-anchor="${anchor}">${a[1]}</text><line x1="${xx}" x2="${xx}" y1="${22+i*16}" y2="${base}" stroke="var(--accent)" stroke-dasharray="2 3" opacity=".6"/>`;});
+  svg+='</svg>';
+  const tot=Object.values(agg).reduce((a,b)=>a+b,0);
+  tls.insertAdjacentHTML('beforeend',`<div class="tl"><h3>${p.n} · ${p.r} <span class="sub">— ${tot} eventos en ${Object.keys(agg).length} días</span></h3>${svg}</div>`);
+});
+</script>
+</body>
+</html>
